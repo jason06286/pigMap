@@ -18,8 +18,8 @@ export default {
     const { isBusiness } = judgeBusiness();
     let center = [25.047176, 121.517058];
     let osm = null;
-    let markerGroup = [];
-    let markerClusterGroup = L.markerClusterGroup();
+    let markerGroup = {};
+    let markerClusterGroup = null;
 
     const pigIcon = new L.Icon({
       iconUrl:
@@ -33,13 +33,14 @@ export default {
     function initMap() {
       osm = L.map(myMap.value, {
         center,
-        zoom: 16,
+        zoom: 14,
       });
       osm.zoomControl.setPosition('topright');
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(osm);
+      markerClusterGroup = new L.MarkerClusterGroup({}).addTo(osm);
     }
 
     function addMarker() {
@@ -65,30 +66,22 @@ export default {
         marker = L.marker([+item.Latitude, +item.Lontitude], {
           icon: pigIcon,
         }).bindPopup(content);
-        markerGroup.push(marker);
+        markerGroup[item.badge_code] = marker;
         markerClusterGroup.addLayer(marker);
-        osm.addLayer(markerClusterGroup);
       });
+      osm.addLayer(markerClusterGroup);
     }
 
     function removeMapMarker() {
-      markerGroup = [];
+      markerGroup = {};
       markerClusterGroup.clearLayers();
     }
 
     function flyToMarker(item) {
       osm.setView([item.Latitude, item.Lontitude], 20);
-      markerGroup.forEach((element) => {
-        const markerLatLong = element.getLatLng();
-        if (
-          markerLatLong.lat === +item.Latitude &&
-          markerLatLong.lng === +item.Lontitude
-        ) {
-          markerClusterGroup.zoomToShowLayer(element, () =>
-            element.openPopup()
-          );
-        }
-      });
+      markerClusterGroup.zoomToShowLayer(markerGroup[item.badge_code], () =>
+        markerGroup[item.badge_code].openPopup()
+      );
     }
 
     watch(
@@ -100,7 +93,7 @@ export default {
             +props.filterData[0].Latitude,
             +props.filterData[0].Lontitude,
           ];
-          osm.panTo(center);
+          osm.setView(center);
           addMarker();
         }
       }
