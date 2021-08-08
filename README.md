@@ -40,16 +40,17 @@ npm run server
 
 ```js
 
- function initMap() {
+function initMap() {
       osm = L.map(myMap.value, {
         center,
-        zoom: 16,
+        zoom: 14,
       });
       osm.zoomControl.setPosition('topright');
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution:
           '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(osm);
+      markerClusterGroup = new L.MarkerClusterGroup({}).addTo(osm);
     }
     
   onMounted(() => {
@@ -98,7 +99,7 @@ npm run server
 
 ```js
 
- function addMarker() {
+    function addMarker() {
       let content = '';
       props.filterData.forEach((item) => {
         let marker;
@@ -121,10 +122,10 @@ npm run server
         marker = L.marker([+item.Latitude, +item.Lontitude], {
           icon: pigIcon,
         }).bindPopup(content);
-        markerGroup.push(marker);
+        markerGroup[item.badge_code] = marker;
         markerClusterGroup.addLayer(marker);
-        osm.addLayer(markerClusterGroup);
       });
+      osm.addLayer(markerClusterGroup);
     }
 
 ```
@@ -140,7 +141,7 @@ npm run server
 ```js
 
   function removeMapMarker() {
-      markerGroup = [];
+      markerGroup = {};
       markerClusterGroup.clearLayers();
     }
 
@@ -150,9 +151,9 @@ npm run server
 
 透過 `setView` 方法移至該地點
 
-再用 `forEach` 跑 `markerGroup`
+透過 `id` `markerGroup[item.badge_code]`
 
-篩選出與選取座標相同的 `marker`
+抓取出點取的 `marker`
 
 再透過 `openPopup` 顯示詳細資料
 
@@ -160,19 +161,11 @@ npm run server
 
 ```js
 
-  function flyToMarker(item) {
+   function flyToMarker(item) {
       osm.setView([item.Latitude, item.Lontitude], 20);
-      markerGroup.forEach((element) => {
-        const markerLatLong = element.getLatLng();
-        if (
-          markerLatLong.lat === +item.Latitude &&
-          markerLatLong.lng === +item.Lontitude
-        ) {
-          markerClusterGroup.zoomToShowLayer(element, () =>
-            element.openPopup()
-          );
-        }
-      });
-    },
+      markerClusterGroup.zoomToShowLayer(markerGroup[item.badge_code], () =>
+        markerGroup[item.badge_code].openPopup()
+      );
+    }
 
 ```
