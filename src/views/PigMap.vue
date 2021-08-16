@@ -1,15 +1,18 @@
 <script>
 import axios from 'axios';
 
-import LeafletMap from './LeafletMap.vue';
-import cityName from '../assets/cityName.json';
-import judgeBusiness from '../composition/judgeBussiness';
+import LeafletMap from '@/components/LeafletMap.vue';
+import BaseLoading from '@/components/BaseLoading.vue';
+
+import cityName from '@/assets/cityName.json';
+import judgeBusiness from '@/composition/judgeBussiness';
 
 import { computed, onMounted, reactive, ref } from 'vue';
 
 export default {
   components: {
     LeafletMap,
+    BaseLoading,
   },
   setup() {
     const isOpen = ref(true);
@@ -38,9 +41,12 @@ export default {
     onMounted(() => {
       getData();
     });
+    const isLoading = ref(true);
     // 區域篩選資料
     const filterData = computed(() => {
+      isLoading.value = true;
       return data.arr.filter((item) => {
+        isLoading.value = false;
         return item.addr.match(select.obj.city + select.obj.area) !== null;
       });
     });
@@ -52,6 +58,7 @@ export default {
       cityName,
       select,
       filterData,
+      isLoading,
 
       ...judgeBusiness(),
 
@@ -62,6 +69,7 @@ export default {
 </script>
 
 <template>
+  <BaseLoading :isLoading="isLoading" />
   <section>
     <LeafletMap :filterData="filterData" ref="map" />
     <div class="sidebar" :class="{ active: isOpen }">
