@@ -2,7 +2,7 @@
 import L from 'leaflet';
 import 'leaflet.markercluster';
 
-import judgeBusiness from '../composition/judgeBussiness';
+import judgeBusiness from '@/composition/judgeBussiness';
 
 import { onMounted, ref, watch } from 'vue';
 

@@ -1,5 +1,5 @@
 <script>
-import PigMap from './components/PigMap.vue';
+import PigMap from '@/views/PigMap.vue';
 export default {
   components: {
     PigMap,
